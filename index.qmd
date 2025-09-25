@@ -1,0 +1,251 @@
+---
+format:
+  html:
+    embed-resources: true
+    page-layout: full
+execute: 
+  warning: false
+  message: false
+  echo: false
+  eval: true
+---
+
+```{r}
+#| label: load pacakages
+
+library(here)
+library(readr)
+library(dplyr)
+library(tidyr)
+library(forcats)
+library(lubridate)
+library(ggplot2)
+library(gt)
+
+```
+
+```{r}
+#| label: read data
+
+visitors_data <- readr::read_csv(
+  file = here::here(
+    "data",
+    "visitors.csv"
+  )
+) |> 
+  dplyr::rename(
+    Places = "Data Series"
+  )
+
+```
+
+```{r}
+#| label: prep data
+
+visitors_data <- visitors_data |>
+  tidyr::pivot_longer(
+    cols = -c("Places"),
+    names_to = c("Year Month"),
+    values_to = "Visitors_In_Thousands"
+  ) |>
+  dplyr::mutate(
+    `Year_Month` = lubridate::ym(.data[["Year Month"]])    
+    
+  ) |> 
+  tidyr::separate(
+    col = "Year Month",
+    into = c("Year", "Month"),
+    sep = " "
+  ) |> 
+  dplyr::mutate(
+    Year = as.numeric(.data[["Year"]]),
+    Month = forcats::fct_relevel(
+      .data[["Month"]],
+      c("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+    )
+  )
+
+
+```
+
+```{r}
+#| label: visitor data in years
+
+visitors_data_years <- visitors_data |> 
+  dplyr::mutate(
+    Visitors_In_Thousands = dplyr::case_when(
+      .data[["Visitors_In_Thousands"]] == "na" ~ "0",
+      .default = .data[["Visitors_In_Thousands"]]
+    )
+  ) |> 
+  dplyr::mutate(
+    Visitors_In_Thousands = as.numeric(.data[["Visitors_In_Thousands"]])
+  ) |> 
+  dplyr::reframe(
+    Visitors_In_Thousands = sum(.data[["Visitors_In_Thousands"]]),
+    .by = c("Places", "Year")
+  )
+
+```
+
+```{r}
+#| label: zoological garden visitor
+
+zoological_garden <- visitors_data_years |> 
+  dplyr::filter(
+    .data[["Places"]] == "Singapore Zoological Gardens" &
+    .data[["Year"]] > 2013 &
+    .data[["Year"]] < 2025
+  ) |> 
+  dplyr::mutate(
+    Year = lubridate::ymd(.data[["Year"]], truncated = 2L)
+  )
+
+```
+
+```{r}
+#| label: jurong lake visitor
+
+jurong_lake <- visitors_data_years |> 
+  dplyr::filter(
+    .data[["Places"]] == "Jurong Lake Gardens" &
+    .data[["Year"]] > 2013 &
+    .data[["Year"]] < 2025
+  ) |> 
+  dplyr::mutate(
+    Year = lubridate::ymd(.data[["Year"]], truncated = 2L)
+  )
+
+```
+
+```{r}
+#| label: night safari visitor
+
+night_safari <- visitors_data_years |> 
+  dplyr::filter(
+    .data[["Places"]] == "Night Safari" &
+    .data[["Year"]] > 2013 &
+    .data[["Year"]] < 2025
+  ) |> 
+  dplyr::mutate(
+    Year = lubridate::ymd(.data[["Year"]], truncated = 2L)
+  )
+
+```
+
+
+```{r}
+#| label: jurong lake visitor plot
+
+jurong_lake_plot <- jurong_lake |> 
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data[["Year"]],
+      y = .data[["Visitors_In_Thousands"]]
+    ),
+  ) +
+  ggplot2::geom_line() +
+  ggplot2::geom_point() +
+  ggplot2::scale_x_date(
+    breaks = as.Date(c("2014-01-01", "2019-01-01", "2024-01-01")),
+    labels = c("2014", "2019", "2024")
+    # date_breaks = "5 year",
+    # date_labels = "%Y"
+  ) +  
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "none",
+    panel.grid.minor = ggplot2::element_blank(),
+    # axis.title.y = ggplot2::element_text(
+    #   margin = ggplot2::margin(r = 10)
+    #   size = 6
+    # ),
+    # axis.text = ggplot2::element_text(size = 5),
+    panel.grid.major.x = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f")
+    # plot.margin = ggplot2::margin(40, 40, 5, 5)
+  )
+
+jurong_lake_plot
+```
+
+```{r}
+#| label: zoological garden visitor plot
+
+zoological_garden_plot <- zoological_garden |> 
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data[["Year"]],
+      y = .data[["Visitors_In_Thousands"]]
+    ),
+  ) +
+  ggplot2::geom_line() +
+  ggplot2::geom_point() +
+  ggplot2::scale_x_date(
+    breaks = as.Date(c("2014-01-01", "2019-01-01", "2024-01-01")),
+    labels = c("2014", "2019", "2024")
+    # date_breaks = "5 year",
+    # date_labels = "%Y"
+  ) + 
+  ggplot2::theme_minimal()
+  # ggplot2::theme(
+  #   legend.position = "none",
+  #   panel.grid.minor = ggplot2::element_blank(),
+  #   # axis.title.y = ggplot2::element_text(
+  #   #   margin = ggplot2::margin(r = 10)
+  #   #   size = 6
+  #   # ),
+  #   # axis.text.x.bottom = 
+  #   #   ggplot2::element_text(
+  #   #     margin = ggplot2::margin(l = 20, r = 20)
+  #   #   ),
+  #   panel.grid.major.x = ggplot2::element_blank(),
+  #   panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f")
+  #   # plot.margin = ggplot2::margin(5,5,5,5)
+  # )
+
+zoological_garden_plot
+```
+
+```{r}
+#| label: night safari visitor plot
+
+night_safari_plot <- night_safari |> 
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data[["Year"]],
+      y = .data[["Visitors_In_Thousands"]]
+    ),
+  ) +
+  ggplot2::geom_line() +
+  ggplot2::geom_point() +
+  ggplot2::scale_x_date(
+    breaks = as.Date(c("2014-01-01", "2019-01-01", "2024-01-01")),
+    labels = c("2014", "2019", "2024")
+    #date_breaks = "5 year",
+    #date_labels = "%Y"
+  ) + 
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "none",
+    panel.grid.minor = ggplot2::element_blank(),
+    # axis.title.y = ggplot2::element_text(
+    #   margin = ggplot2::margin(r = 10)
+    #   size = 6
+    # ),
+    # axis.text = ggplot2::element_text(size = 5),
+    panel.grid.major.x = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f")
+    # plot.margin = ggplot2::margin(40, 40, 5, 5)
+  )
+
+night_safari_plot
+```
+
+```{r}
+#| label: get images
+# read in images from GitHub repo and set height
+all_images <- tibble::tibble(taxon = lemur_nums$taxon) %>% 
+  mutate(img_html = glue::glue("<img src='https://raw.githubusercontent.com/nrennie/2022-table-contest/main/images/{taxon}.png' style='height:100px;'>"))
+```
