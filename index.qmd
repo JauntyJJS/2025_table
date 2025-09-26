@@ -12,29 +12,61 @@ execute:
 
 ```{r}
 #| label: load pacakages
+#| message: false
 
 library(here)
 library(readr)
+library(tibble)
 library(dplyr)
 library(tidyr)
 library(forcats)
 library(lubridate)
+library(purrr)
+library(glue)
 library(ggplot2)
 library(gt)
 
+round_any = function(x, accuracy, f = round){f(x / accuracy) * accuracy}
 ```
+
 
 ```{r}
 #| label: read data
 
-visitors_data <- readr::read_csv(
-  file = here::here(
-    "data",
-    "visitors.csv"
-  )
-) |> 
-  dplyr::rename(
-    Places = "Data Series"
+visitors_full_data <- readr::read_csv(
+  file = "https://raw.githubusercontent.com/JauntyJJS/2025_table/main/data/visitors.csv",
+  show_col_types = FALSE
+)
+
+image_credits_data <- readr::read_csv(
+  file = "https://raw.githubusercontent.com/JauntyJJS/2025_table/main/data/image_credits.csv",
+  show_col_types = FALSE
+)
+
+```
+
+```{r}
+#| label: table text
+
+# write caption for table
+data_source <- '<a style="color:#a1b70d" href="https://tablebuilder.singstat.gov.sg/table/TS/M891071" target="_blank">Visits To Selected Places Of Interest Data</a> from <a style="color:#a1b70d" href="https://www.singstat.gov.sg/" target="_blank">Department of Statistics Singapore</a>'
+
+```
+
+```{r}
+#| label: get images
+
+# read in images from GitHub repo and set height
+
+id <- image_credits_data$ID
+
+all_images <- tibble::tibble(ID = image_credits_data$ID)
+
+all_images <- all_images |> 
+  dplyr::mutate(
+    Image = glue::glue(
+      "<img src='https://raw.githubusercontent.com/JauntyJJS/2025_table/main/images/{id}.jpg' style='height:100px;'>"
+    )
   )
 
 ```
@@ -42,9 +74,10 @@ visitors_data <- readr::read_csv(
 ```{r}
 #| label: prep data
 
-visitors_data <- visitors_data |>
+
+visitors_data <- visitors_full_data |>
   tidyr::pivot_longer(
-    cols = -c("Places"),
+    cols = -c("ID", "Places"),
     names_to = c("Year Month"),
     values_to = "Visitors_In_Thousands"
   ) |>
@@ -81,25 +114,24 @@ visitors_data_years <- visitors_data |>
   ) |> 
   dplyr::mutate(
     Visitors_In_Thousands = as.numeric(.data[["Visitors_In_Thousands"]])
-  ) |> 
+  ) |>
   dplyr::reframe(
     Visitors_In_Thousands = sum(.data[["Visitors_In_Thousands"]]),
     .by = c("Places", "Year")
-  )
-
-```
-
-```{r}
-#| label: zoological garden visitor
-
-zoological_garden <- visitors_data_years |> 
-  dplyr::filter(
-    .data[["Places"]] == "Singapore Zoological Gardens" &
-    .data[["Year"]] > 2013 &
-    .data[["Year"]] < 2025
   ) |> 
   dplyr::mutate(
-    Year = lubridate::ymd(.data[["Year"]], truncated = 2L)
+    is_zero = dplyr::if_else(
+      .data[["Visitors_In_Thousands"]] == 0,
+      "Yes",
+      "No"
+      ),
+    is_zero_lead = dplyr::lead(.data[["is_zero"]]),
+    is_zero_lag = dplyr::lag(.data[["is_zero"]]),
+    is_zero_line = dplyr::case_when(
+      .data[["is_zero"]] == "No" & dplyr::lead(.data[["is_zero"]]) == "No" ~ "No",
+      dplyr::lag(.data[["is_zero"]]) == "Yes" ~ "Yes",
+      .default = "No"
+    )
   )
 
 ```
@@ -110,7 +142,22 @@ zoological_garden <- visitors_data_years |>
 jurong_lake <- visitors_data_years |> 
   dplyr::filter(
     .data[["Places"]] == "Jurong Lake Gardens" &
-    .data[["Year"]] > 2013 &
+    .data[["Year"]] > 2009 &
+    .data[["Year"]] < 2025
+  ) |> 
+  dplyr::mutate(
+    Year = lubridate::ymd(.data[["Year"]], truncated = 2L)
+  )
+
+```
+
+```{r}
+#| label: zoological garden visitor
+
+zoological_garden <- visitors_data_years |> 
+  dplyr::filter(
+    .data[["Places"]] == "Singapore Zoological Gardens" &
+    .data[["Year"]] > 2009 &
     .data[["Year"]] < 2025
   ) |> 
   dplyr::mutate(
@@ -125,7 +172,142 @@ jurong_lake <- visitors_data_years |>
 night_safari <- visitors_data_years |> 
   dplyr::filter(
     .data[["Places"]] == "Night Safari" &
-    .data[["Year"]] > 2013 &
+    .data[["Year"]] > 2009 &
+    .data[["Year"]] < 2025
+  ) |> 
+  dplyr::mutate(
+    Year = lubridate::ymd(.data[["Year"]], truncated = 2L)
+  )
+
+```
+
+```{r}
+#| label: river wonder visitor
+
+river_wonder <- visitors_data_years |> 
+  dplyr::filter(
+    .data[["Places"]] == "River Wonders" &
+    .data[["Year"]] > 2009 &
+    .data[["Year"]] < 2025
+  ) |> 
+  dplyr::mutate(
+    Year = lubridate::ymd(.data[["Year"]], truncated = 2L)
+  )
+
+```
+
+```{r}
+#| label: mandai bird paradise visitor
+
+mandai_bird_paradise <- visitors_data_years |> 
+  dplyr::filter(
+    .data[["Places"]] == "Mandai Bird Paradise" &
+    .data[["Year"]] > 2009 &
+    .data[["Year"]] < 2025
+  ) |> 
+  dplyr::mutate(
+    Year = lubridate::ymd(.data[["Year"]], truncated = 2L)
+  )
+
+```
+
+```{r}
+#| label: national museum singapore visitor
+
+national_museum_singapore <- visitors_data_years |> 
+  dplyr::filter(
+    .data[["Places"]] == "National Museum Of Singapore" &
+    .data[["Year"]] > 2009 &
+    .data[["Year"]] < 2025
+  ) |> 
+  dplyr::mutate(
+    Year = lubridate::ymd(.data[["Year"]], truncated = 2L)
+  )
+
+```
+
+```{r}
+#| label: asian civilisation museum visitor
+
+asian_civilisations_museum <- visitors_data_years |> 
+  dplyr::filter(
+    .data[["Places"]] == "Asian Civilisations Museum" &
+    .data[["Year"]] > 2009 &
+    .data[["Year"]] < 2025
+  ) |> 
+  dplyr::mutate(
+    Year = lubridate::ymd(.data[["Year"]], truncated = 2L)
+  )
+
+```
+
+```{r}
+#| label: peranakan museum visitor
+
+peranakan_museum <- visitors_data_years |> 
+  dplyr::filter(
+    .data[["Places"]] == "Peranakan Museum" &
+    .data[["Year"]] > 2009 &
+    .data[["Year"]] < 2025
+  ) |> 
+  dplyr::mutate(
+    Year = lubridate::ymd(.data[["Year"]], truncated = 2L)
+  )
+
+```
+
+```{r}
+#| label: indian heritage centre visitor
+
+indian_heritage_centre <- visitors_data_years |> 
+  dplyr::filter(
+    .data[["Places"]] == "Indian Heritage Centre" &
+    .data[["Year"]] > 2009 &
+    .data[["Year"]] < 2025
+  ) |> 
+  dplyr::mutate(
+    Year = lubridate::ymd(.data[["Year"]], truncated = 2L)
+  )
+
+```
+
+```{r}
+#| label: children museum singapore visitor
+
+children_museum_singapore <- visitors_data_years |> 
+  dplyr::filter(
+    .data[["Places"]] == "Children's Museum Singapore" &
+    .data[["Year"]] > 2009 &
+    .data[["Year"]] < 2025
+  ) |> 
+  dplyr::mutate(
+    Year = lubridate::ymd(.data[["Year"]], truncated = 2L)
+  )
+
+```
+
+```{r}
+#| label: science centre singapore visitor
+
+science_centre_singapore <- visitors_data_years |> 
+  dplyr::filter(
+    .data[["Places"]] == "Science Centre Singapore" &
+    .data[["Year"]] > 2009 &
+    .data[["Year"]] < 2025
+  ) |> 
+  dplyr::mutate(
+    Year = lubridate::ymd(.data[["Year"]], truncated = 2L)
+  )
+
+```
+
+```{r}
+#| label: singapore art museum visitor
+
+singapore_art_museum <- visitors_data_years |> 
+  dplyr::filter(
+    .data[["Places"]] == "Singapore Art Museum" &
+    .data[["Year"]] > 2009 &
     .data[["Year"]] < 2025
   ) |> 
   dplyr::mutate(
@@ -145,29 +327,71 @@ jurong_lake_plot <- jurong_lake |>
       y = .data[["Visitors_In_Thousands"]]
     ),
   ) +
-  ggplot2::geom_line() +
-  ggplot2::geom_point() +
+  ggplot2::geom_vline(
+    xintercept = as.Date(c("2020-01-01", "2023-01-01")),
+    linetype = "solid", color = "purple", size = 4, alpha = 0.4
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2020-01-01"), 
+    y = max(jurong_lake[["Visitors_In_Thousands"]]), 
+    label = "Rejuvenation", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 1
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2023-01-01"), 
+    y = max(jurong_lake[["Visitors_In_Thousands"]]), 
+    label = "Reopened", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 1
+  ) +   
+  ggplot2::geom_line(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero_line"]],
+      group = 1),
+    linewidth = 3 
+  ) +
+  ggplot2::geom_point(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero"]]),
+    size = 10
+  ) +
+  ggplot2::labs(x = "", y = "Visit Numbers\n(Thousands)") +
+  ggplot2::scale_color_manual(
+    values = c("Black", "#74cdd3")
+  ) +
   ggplot2::scale_x_date(
-    breaks = as.Date(c("2014-01-01", "2019-01-01", "2024-01-01")),
-    labels = c("2014", "2019", "2024")
-    # date_breaks = "5 year",
-    # date_labels = "%Y"
-  ) +  
+    breaks = as.Date(c("2010-01-01", "2015-01-01", "2020-01-01", "2024-01-01")),
+    labels = c("2010", "2015", "2020", "2024")
+    #date_breaks = "5 year",
+    #date_labels = "%Y"
+  ) + 
+  ggplot2::scale_y_continuous(
+    limits = c(
+      0, 
+      round_any(max(jurong_lake[["Visitors_In_Thousands"]]), 50, ceiling)
+    )
+  ) +
   ggplot2::theme_minimal() +
   ggplot2::theme(
     legend.position = "none",
     panel.grid.minor = ggplot2::element_blank(),
-    # axis.title.y = ggplot2::element_text(
-    #   margin = ggplot2::margin(r = 10)
-    #   size = 6
-    # ),
-    # axis.text = ggplot2::element_text(size = 5),
+    axis.title.y = ggplot2::element_text(
+      margin = ggplot2::margin(r = 30),
+      size = 30
+    ),
+    axis.text = element_text(size = 40),
     panel.grid.major.x = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f")
-    # plot.margin = ggplot2::margin(40, 40, 5, 5)
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
+    plot.margin = ggplot2::margin(40, 40, 5, 5)
   )
 
-jurong_lake_plot
 ```
 
 ```{r}
@@ -180,32 +404,62 @@ zoological_garden_plot <- zoological_garden |>
       y = .data[["Visitors_In_Thousands"]]
     ),
   ) +
-  ggplot2::geom_line() +
-  ggplot2::geom_point() +
+  ggplot2::geom_vline(
+    xintercept = as.Date(c("2020-01-01")),
+    linetype = "solid", color = "red", size = 4, alpha = 0.4
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2020-01-01"), 
+    y = max(zoological_garden[["Visitors_In_Thousands"]]), 
+    label = "Covid-19", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 0.5
+  ) +
+  ggplot2::geom_line(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero_line"]],
+      group = 1),
+    linewidth = 3 
+  ) +
+  ggplot2::geom_point(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero"]]),
+    size = 10
+  ) +
+  ggplot2::labs(x = "", y = "Visit Numbers\n(Thousands)") +
+  ggplot2::scale_color_manual(
+    values = c("Black", "#74cdd3")
+  ) +
   ggplot2::scale_x_date(
-    breaks = as.Date(c("2014-01-01", "2019-01-01", "2024-01-01")),
-    labels = c("2014", "2019", "2024")
-    # date_breaks = "5 year",
-    # date_labels = "%Y"
+    breaks = as.Date(c("2010-01-01", "2015-01-01", "2020-01-01", "2024-01-01")),
+    labels = c("2010", "2015", "2020", "2024")
+    #date_breaks = "5 year",
+    #date_labels = "%Y"
   ) + 
-  ggplot2::theme_minimal()
-  # ggplot2::theme(
-  #   legend.position = "none",
-  #   panel.grid.minor = ggplot2::element_blank(),
-  #   # axis.title.y = ggplot2::element_text(
-  #   #   margin = ggplot2::margin(r = 10)
-  #   #   size = 6
-  #   # ),
-  #   # axis.text.x.bottom = 
-  #   #   ggplot2::element_text(
-  #   #     margin = ggplot2::margin(l = 20, r = 20)
-  #   #   ),
-  #   panel.grid.major.x = ggplot2::element_blank(),
-  #   panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f")
-  #   # plot.margin = ggplot2::margin(5,5,5,5)
-  # )
+  ggplot2::scale_y_continuous(
+    limits = c(
+      0, 
+      round_any(max(zoological_garden[["Visitors_In_Thousands"]]), 50, ceiling)
+    )
+  ) +
+  ggplot2::coord_cartesian( clip = "off") +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "none",
+    panel.grid.minor = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_text(
+      margin = ggplot2::margin(r = 30),
+      size = 30
+    ),
+    axis.text = element_text(size = 40),
+    panel.grid.major.x = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
+    plot.margin = ggplot2::margin(40, 40, 5, 5)
+  )
 
-zoological_garden_plot
 ```
 
 ```{r}
@@ -218,34 +472,858 @@ night_safari_plot <- night_safari |>
       y = .data[["Visitors_In_Thousands"]]
     ),
   ) +
-  ggplot2::geom_line() +
-  ggplot2::geom_point() +
+  ggplot2::geom_vline(
+    xintercept = as.Date(c("2020-01-01")),
+    linetype = "solid", color = "red", size = 4, alpha = 0.4
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2020-01-01"), 
+    y = max(night_safari[["Visitors_In_Thousands"]]), 
+    label = "Covid-19", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 0.6
+  ) +
+  ggplot2::geom_line(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero_line"]],
+      group = 1),
+    linewidth = 3 
+  ) +
+  ggplot2::geom_point(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero"]]),
+    size = 10
+  ) +
+  ggplot2::labs(x = "", y = "Visit Numbers\n(Thousands)") +
+  ggplot2::scale_color_manual(
+    values = c("Black", "#74cdd3")
+  ) +
   ggplot2::scale_x_date(
-    breaks = as.Date(c("2014-01-01", "2019-01-01", "2024-01-01")),
-    labels = c("2014", "2019", "2024")
+    breaks = as.Date(c("2010-01-01", "2015-01-01", "2020-01-01", "2024-01-01")),
+    labels = c("2010", "2015", "2020", "2024")
     #date_breaks = "5 year",
     #date_labels = "%Y"
   ) + 
+  ggplot2::scale_y_continuous(
+    limits = c(
+      0, 
+      round_any(max(night_safari[["Visitors_In_Thousands"]]), 50, ceiling)
+    )
+  ) +
+  ggplot2::coord_cartesian( clip = "off") +
   ggplot2::theme_minimal() +
   ggplot2::theme(
     legend.position = "none",
     panel.grid.minor = ggplot2::element_blank(),
-    # axis.title.y = ggplot2::element_text(
-    #   margin = ggplot2::margin(r = 10)
-    #   size = 6
-    # ),
-    # axis.text = ggplot2::element_text(size = 5),
+    axis.title.y = ggplot2::element_text(
+      margin = ggplot2::margin(r = 30),
+      size = 30
+    ),
+    axis.text = element_text(size = 40),
     panel.grid.major.x = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f")
-    # plot.margin = ggplot2::margin(40, 40, 5, 5)
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
+    plot.margin = ggplot2::margin(40, 40, 5, 5)
   )
 
-night_safari_plot
 ```
 
 ```{r}
-#| label: get images
-# read in images from GitHub repo and set height
-all_images <- tibble::tibble(taxon = lemur_nums$taxon) %>% 
-  mutate(img_html = glue::glue("<img src='https://raw.githubusercontent.com/nrennie/2022-table-contest/main/images/{taxon}.png' style='height:100px;'>"))
+#| label: river wonder visitor plot
+
+river_wonder_plot <- river_wonder |> 
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data[["Year"]],
+      y = .data[["Visitors_In_Thousands"]]
+    ),
+  ) +
+  ggplot2::geom_vline(
+    xintercept = as.Date(c("2012-01-01")),
+    linetype = "solid", color = "purple", size = 4, alpha = 0.4
+  ) +
+  ggplot2::geom_vline(
+    xintercept = as.Date(c("2020-01-01")),
+    linetype = "solid", color = "red", size = 4, alpha = 0.4
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2012-01-01"), 
+    y = max(river_wonder[["Visitors_In_Thousands"]]), 
+    label = "Opening", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 1
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2020-01-01"), 
+    y = max(river_wonder[["Visitors_In_Thousands"]]), 
+    label = "Covid-19", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 0.6
+  ) +
+  ggplot2::geom_line(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero_line"]],
+      group = 1),
+    linewidth = 3 
+  ) +
+  ggplot2::geom_point(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero"]]),
+    size = 10
+  ) +
+  ggplot2::labs(x = "", y = "Visit Numbers\n(Thousands)") +
+  ggplot2::scale_color_manual(
+    values = c("Black", "#74cdd3")
+  ) +
+  ggplot2::scale_x_date(
+    breaks = as.Date(c("2010-01-01", "2015-01-01", "2020-01-01", "2024-01-01")),
+    labels = c("2010", "2015", "2020", "2024")
+    #date_breaks = "5 year",
+    #date_labels = "%Y"
+  ) + 
+  ggplot2::scale_y_continuous(
+    limits = c(
+      0, 
+      round_any(max(river_wonder[["Visitors_In_Thousands"]]), 50, ceiling)
+    )
+  ) +
+  ggplot2::coord_cartesian( clip = "off") +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "none",
+    panel.grid.minor = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_text(
+      margin = ggplot2::margin(r = 30),
+      size = 30
+    ),
+    axis.text = element_text(size = 40),
+    panel.grid.major.x = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
+    plot.margin = ggplot2::margin(40, 40, 5, 5)
+  )
+
+```
+
+```{r}
+#| label: mandai bird paradise visitor plot
+
+mandai_bird_paradise_plot <- mandai_bird_paradise |> 
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data[["Year"]],
+      y = .data[["Visitors_In_Thousands"]]
+    ),
+  ) +
+  ggplot2::geom_vline(
+    xintercept = as.Date(c("2022-01-01")),
+    linetype = "solid", color = "purple", size = 4, alpha = 0.4
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2022-01-01"), 
+    y = max(mandai_bird_paradise[["Visitors_In_Thousands"]]), 
+    label = "Opening", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 1
+  ) +
+  ggplot2::geom_line(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero_line"]],
+      group = 1),
+    linewidth = 3 
+  ) +
+  ggplot2::geom_point(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero"]]),
+    size = 10
+  ) +
+  ggplot2::labs(x = "", y = "Visit Numbers\n(Thousands)") +
+  ggplot2::scale_color_manual(
+    values = c("Black", "#74cdd3")
+  ) +
+  ggplot2::scale_x_date(
+    breaks = as.Date(c("2010-01-01", "2015-01-01", "2020-01-01", "2024-01-01")),
+    labels = c("2010", "2015", "2020", "2024")
+    #date_breaks = "5 year",
+    #date_labels = "%Y"
+  ) + 
+  ggplot2::scale_y_continuous(
+    limits = c(
+      0, 
+      round_any(max(mandai_bird_paradise[["Visitors_In_Thousands"]]), 50, ceiling)
+    )
+  ) +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "none",
+    panel.grid.minor = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_text(
+      margin = ggplot2::margin(r = 30),
+      size = 30
+    ),
+    axis.text = element_text(size = 40),
+    panel.grid.major.x = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
+    plot.margin = ggplot2::margin(40, 40, 5, 5)
+  )
+
+```
+
+```{r}
+#| label: national museum singapore visitor plot
+
+national_museum_singapore_plot <- national_museum_singapore |> 
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data[["Year"]],
+      y = .data[["Visitors_In_Thousands"]]
+    ),
+  ) +
+  ggplot2::geom_vline(
+    xintercept = as.Date(c("2020-01-01")),
+    linetype = "solid", color = "red", size = 4, alpha = 0.4
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2020-01-01"), 
+    y = max(national_museum_singapore[["Visitors_In_Thousands"]]), 
+    label = "Covid-19", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 0.6
+  ) +
+  ggplot2::geom_line(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero_line"]],
+      group = 1),
+    linewidth = 3 
+  ) +
+  ggplot2::geom_point(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero"]]),
+    size = 10
+  ) +
+  ggplot2::labs(x = "", y = "Visit Numbers\n(Thousands)") +
+  ggplot2::scale_color_manual(
+    values = c("Black", "#74cdd3")
+  ) +
+  ggplot2::scale_x_date(
+    breaks = as.Date(c("2010-01-01", "2015-01-01", "2020-01-01", "2024-01-01")),
+    labels = c("2010", "2015", "2020", "2024")
+    #date_breaks = "5 year",
+    #date_labels = "%Y"
+  ) + 
+  ggplot2::scale_y_continuous(
+    limits = c(
+      0, 
+      round_any(max(national_museum_singapore[["Visitors_In_Thousands"]]), 50, ceiling)
+    )
+  ) +
+  ggplot2::coord_cartesian( clip = "off") +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "none",
+    panel.grid.minor = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_text(
+      margin = ggplot2::margin(r = 30),
+      size = 30
+    ),
+    axis.text = element_text(size = 40),
+    panel.grid.major.x = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
+    plot.margin = ggplot2::margin(40, 40, 5, 5)
+  )
+
+```
+
+```{r}
+#| label: asian civilisations museum visitor plot
+
+asian_civilisations_museum_plot <- asian_civilisations_museum |> 
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data[["Year"]],
+      y = .data[["Visitors_In_Thousands"]]
+    ),
+  ) +
+  ggplot2::geom_vline(
+    xintercept = as.Date(c("2020-01-01")),
+    linetype = "solid", color = "red", size = 4, alpha = 0.4
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2020-01-01"), 
+    y = max(asian_civilisations_museum[["Visitors_In_Thousands"]]), 
+    label = "Covid-19", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 0.8
+  ) +
+  ggplot2::geom_line(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero_line"]],
+      group = 1),
+    linewidth = 3 
+  ) +
+  ggplot2::geom_point(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero"]]),
+    size = 10
+  ) +
+  ggplot2::labs(x = "", y = "Visit Numbers\n(Thousands)") +
+  ggplot2::scale_color_manual(
+    values = c("Black", "#74cdd3")
+  ) +
+  ggplot2::scale_x_date(
+    breaks = as.Date(c("2010-01-01", "2015-01-01", "2020-01-01", "2024-01-01")),
+    labels = c("2010", "2015", "2020", "2024")
+    #date_breaks = "5 year",
+    #date_labels = "%Y"
+  ) + 
+  ggplot2::scale_y_continuous(
+    limits = c(
+      0, 
+      round_any(max(asian_civilisations_museum[["Visitors_In_Thousands"]]), 50, ceiling)
+    )
+  ) +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "none",
+    panel.grid.minor = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_text(
+      margin = ggplot2::margin(r = 30),
+      size = 30
+    ),
+    axis.text = element_text(size = 40),
+    panel.grid.major.x = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
+    plot.margin = ggplot2::margin(40, 40, 5, 5)
+  )
+
+```
+
+```{r}
+#| label: peranakan museum visitor plot
+
+peranakan_museum_plot <- peranakan_museum |> 
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data[["Year"]],
+      y = .data[["Visitors_In_Thousands"]]
+    ),
+  ) +
+  ggplot2::geom_vline(
+    xintercept = as.Date(c("2020-01-01", "2022-01-01")),
+    linetype = "solid", color = "purple", size = 4, alpha = 0.4
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2020-01-01"), 
+    y = max(peranakan_museum[["Visitors_In_Thousands"]]), 
+    label = "Renovation", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 1
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2022-01-01"), 
+    y = max(peranakan_museum[["Visitors_In_Thousands"]]), 
+    label = "Reopened", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 1
+  ) +   
+  ggplot2::geom_line(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero_line"]],
+      group = 1),
+    linewidth = 3 
+  ) +
+  ggplot2::geom_point(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero"]]),
+    size = 10
+  ) +
+  ggplot2::labs(x = "", y = "Visit Numbers\n(Thousands)") +
+  ggplot2::scale_color_manual(
+    values = c("Black", "#74cdd3")
+  ) +
+  ggplot2::scale_x_date(
+    breaks = as.Date(c("2010-01-01", "2015-01-01", "2020-01-01", "2024-01-01")),
+    labels = c("2010", "2015", "2020", "2024")
+    #date_breaks = "5 year",
+    #date_labels = "%Y"
+  ) + 
+  ggplot2::scale_y_continuous(
+    limits = c(
+      0, 
+      round_any(max(peranakan_museum[["Visitors_In_Thousands"]]), 50, ceiling)
+    )
+  ) +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "none",
+    panel.grid.minor = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_text(
+      margin = ggplot2::margin(r = 30),
+      size = 30
+    ),
+    axis.text = element_text(size = 40),
+    panel.grid.major.x = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
+    plot.margin = ggplot2::margin(40, 40, 5, 5)
+  )
+
+```
+
+```{r}
+#| label: indian heritage centre plot
+
+indian_heritage_centre_plot <- indian_heritage_centre |> 
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data[["Year"]],
+      y = .data[["Visitors_In_Thousands"]]
+    ),
+  ) +
+  ggplot2::geom_vline(
+    xintercept = as.Date(c("2014-01-01")),
+    linetype = "solid", color = "purple", size = 4, alpha = 0.4
+  ) +
+  ggplot2::geom_vline(
+    xintercept = as.Date(c("2020-01-01")),
+    linetype = "solid", color = "red", size = 4, alpha = 0.4
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2014-01-01"), 
+    y = max(indian_heritage_centre[["Visitors_In_Thousands"]]), 
+    label = "Opening", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 1
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2020-01-01"), 
+    y = max(indian_heritage_centre[["Visitors_In_Thousands"]]), 
+    label = "Covid-19", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 0.6
+  ) +
+  ggplot2::geom_line(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero_line"]],
+      group = 1),
+    linewidth = 3 
+  ) +
+  ggplot2::geom_point(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero"]]),
+    size = 10
+  ) +
+  ggplot2::labs(x = "", y = "Visit Numbers\n(Thousands)") +
+  ggplot2::scale_color_manual(
+    values = c("Black", "#74cdd3")
+  ) +
+  ggplot2::scale_x_date(
+    breaks = as.Date(c("2010-01-01", "2015-01-01", "2020-01-01", "2024-01-01")),
+    labels = c("2010", "2015", "2020", "2024")
+    #date_breaks = "5 year",
+    #date_labels = "%Y"
+  ) + 
+  ggplot2::scale_y_continuous(
+    limits = c(
+      0, 
+      round_any(max(indian_heritage_centre[["Visitors_In_Thousands"]]), 50, ceiling)
+    )
+  ) +
+  ggplot2::coord_cartesian( clip = "off") +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "none",
+    panel.grid.minor = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_text(
+      margin = ggplot2::margin(r = 30),
+      size = 30
+    ),
+    axis.text = element_text(size = 40),
+    panel.grid.major.x = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
+    plot.margin = ggplot2::margin(40, 40, 5, 5)
+  )
+
+```
+
+```{r}
+#| label: children museum singapore plot
+
+children_museum_singapore_plot <- children_museum_singapore |> 
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data[["Year"]],
+      y = .data[["Visitors_In_Thousands"]]
+    ),
+  ) +
+  ggplot2::geom_vline(
+    xintercept = as.Date(c("2022-01-01")),
+    linetype = "solid", color = "purple", size = 4, alpha = 0.4
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2022-01-01"), 
+    y = max(children_museum_singapore[["Visitors_In_Thousands"]]), 
+    label = "Opening", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 1
+  ) +
+  ggplot2::geom_line(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero_line"]],
+      group = 1),
+    linewidth = 3 
+  ) +
+  ggplot2::geom_point(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero"]]),
+    size = 10
+  ) +
+  ggplot2::labs(x = "", y = "Visit Numbers\n(Thousands)") +
+  ggplot2::scale_color_manual(
+    values = c("Black", "#74cdd3")
+  ) +
+  ggplot2::scale_x_date(
+    breaks = as.Date(c("2010-01-01", "2015-01-01", "2020-01-01", "2024-01-01")),
+    labels = c("2010", "2015", "2020", "2024")
+    #date_breaks = "5 year",
+    #date_labels = "%Y"
+  ) + 
+  ggplot2::scale_y_continuous(
+    limits = c(
+      0, 
+      round_any(max(children_museum_singapore[["Visitors_In_Thousands"]]), 50, ceiling)
+    )
+  ) +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "none",
+    panel.grid.minor = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_text(
+      margin = ggplot2::margin(r = 30),
+      size = 30
+    ),
+    axis.text = element_text(size = 40),
+    panel.grid.major.x = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
+    plot.margin = ggplot2::margin(40, 40, 5, 5)
+  )
+
+```
+
+```{r}
+#| label: science centre singapore plot
+
+science_centre_singapore_plot <- science_centre_singapore |> 
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data[["Year"]],
+      y = .data[["Visitors_In_Thousands"]]
+    ),
+  ) +
+  ggplot2::geom_vline(
+    xintercept = as.Date(c("2020-01-01")),
+    linetype = "solid", color = "red", size = 4, alpha = 0.4
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2020-01-01"), 
+    y = max(asian_civilisations_museum[["Visitors_In_Thousands"]]), 
+    label = "Covid-19", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 0.2
+  ) +
+  ggplot2::geom_line(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero_line"]],
+      group = 1),
+    linewidth = 3 
+  ) +
+  ggplot2::geom_point(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero"]]),
+    size = 10
+  ) +
+  ggplot2::labs(x = "", y = "Visit Numbers\n(Thousands)") +
+  ggplot2::scale_color_manual(
+    values = c("Black", "#74cdd3")
+  ) +
+  ggplot2::scale_x_date(
+    breaks = as.Date(c("2010-01-01", "2015-01-01", "2020-01-01", "2024-01-01")),
+    labels = c("2010", "2015", "2020", "2024")
+    #date_breaks = "5 year",
+    #date_labels = "%Y"
+  ) + 
+  ggplot2::scale_y_continuous(
+    limits = c(
+      0, 
+      round_any(max(science_centre_singapore[["Visitors_In_Thousands"]]), 50, ceiling)
+    )
+  ) +
+  ggplot2::coord_cartesian( clip = "off") +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "none",
+    panel.grid.minor = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_text(
+      margin = ggplot2::margin(r = 30),
+      size = 30
+    ),
+    axis.text = element_text(size = 40),
+    panel.grid.major.x = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
+    plot.margin = ggplot2::margin(40, 40, 5, 5)
+  )
+
+```
+
+```{r}
+#| label: singapore art museum plot
+
+singapore_art_museum_plot <- singapore_art_museum |> 
+  ggplot2::ggplot(
+    mapping = ggplot2::aes(
+      x = .data[["Year"]],
+      y = .data[["Visitors_In_Thousands"]]
+    ),
+  ) +
+  ggplot2::geom_vline(
+    xintercept = as.Date(c("2022-01-01")),
+    linetype = "solid", color = "purple", size = 4, alpha = 0.4
+  ) +
+  ggplot2::geom_vline(
+    xintercept = as.Date(c("2020-01-01")),
+    linetype = "solid", color = "red", size = 4, alpha = 0.4
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2022-01-01"), 
+    y = max(singapore_art_museum[["Visitors_In_Thousands"]]), 
+    label = "Relocated", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 0.8
+  ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2020-01-01"), 
+    y = max(singapore_art_museum[["Visitors_In_Thousands"]]), 
+    label = "Covid-19", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 0.8
+  ) +
+  ggplot2::geom_line(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero_line"]],
+      group = 1),
+    linewidth = 3 
+  ) +
+  ggplot2::geom_point(
+    mapping = ggplot2::aes(
+      color = .data[["is_zero"]]),
+    size = 10
+  ) +
+  ggplot2::labs(x = "", y = "Visit Numbers\n(Thousands)") +
+  ggplot2::scale_color_manual(
+    values = c("Black", "#74cdd3")
+  ) +
+  ggplot2::scale_x_date(
+    breaks = as.Date(c("2010-01-01", "2015-01-01", "2020-01-01", "2024-01-01")),
+    labels = c("2010", "2015", "2020", "2024")
+    #date_breaks = "5 year",
+    #date_labels = "%Y"
+  ) + 
+  ggplot2::scale_y_continuous(
+    limits = c(
+      0, 
+      round_any(max(singapore_art_museum[["Visitors_In_Thousands"]]), 50, ceiling)
+    )
+  ) +
+  ggplot2::coord_cartesian( clip = "off") +
+  ggplot2::theme_minimal() +
+  ggplot2::theme(
+    legend.position = "none",
+    panel.grid.minor = ggplot2::element_blank(),
+    axis.title.y = ggplot2::element_text(
+      margin = ggplot2::margin(r = 30),
+      size = 30
+    ),
+    axis.text = element_text(size = 40),
+    panel.grid.major.x = ggplot2::element_blank(),
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
+    plot.margin = ggplot2::margin(40, 40, 5, 5)
+  )
+
+```
+
+
+```{r}
+#| label: table setup
+
+visitor_table <- image_credits_data |>
+  dplyr::left_join(
+    y = all_images,
+    by = dplyr::join_by("ID")
+  ) |> 
+  dplyr::select(
+    c("Places", "Image")
+  ) |> 
+  dplyr::mutate(
+    lines = NA
+  )
+
+lineplot_list = list(
+  jurong_lake_plot,
+  zoological_garden_plot,
+  night_safari_plot,
+  river_wonder_plot,
+  mandai_bird_paradise_plot,
+  national_museum_singapore_plot,
+  asian_civilisations_museum_plot,
+  peranakan_museum_plot,
+  indian_heritage_centre_plot,
+  children_museum_singapore_plot,
+  science_centre_singapore_plot,
+  singapore_art_museum_plot
+)
+
+```
+
+# Table
+
+```{r}
+#| label: make table
+
+visitor_table |> 
+  gt::gt() |> 
+  gt::text_transform(
+    locations = gt::cells_body(columns = Image),
+    fn = function(x){
+        purrr::map(
+        visitor_table$Image, gt::html
+      )
+    }
+  ) |> 
+  # linecharts
+  gt::text_transform(
+    locations = cells_body(columns = lines),
+    fn = function(x){
+      purrr::map(
+        lineplot_list, gt::ggplot_image, height = px(100), aspect_ratio = 4
+      )
+    }
+  ) |> 
+  # column width
+  # gt::cols_width(
+  #   Places ~ gt::px(10),
+  #   Image ~ gt::px(125),
+  #   lines ~ gt::px(325)
+  # ) |> 
+  # source note uing captions written previously
+  gt::tab_source_note(
+    source_note = gt::html(
+      glue::glue("{data_source}")
+    )
+  )
+
+```
+
+# Image Credits
+
+All images are cropped to an aspect ratio of 16:9.
+
+```{r}
+#| label: make image credits table
+
+image_credits_table <- image_credits_data |> 
+  dplyr::left_join(
+    y = all_images,
+    by = dplyr::join_by("ID")
+  ) |> 
+  
+  dplyr::mutate(
+    source_link = glue::glue(
+      '<a style="color:#a1b70d" href="{.data[["Image Link"]]}" target="_blank">{.data[["Description"]]}</a> by <a style="color:#a1b70d" href="{.data[["Author Link"]]}" target="_blank">{.data[["Author"]]}</a> at <a style="color:#a1b70d" href="{.data[["Website Link"]]}" target="_blank">{.data[["Website"]]}</a>'),
+    cc_license = glue::glue(
+      '<a style="color:#a1b70d" href="{.data[["License Link"]]}" target="_blank">{.data[["License"]]}</a>')
+  ) |> 
+  dplyr::select(
+    c("Image", "source_link", "cc_license")
+  )
+
+image_credits_table |> 
+  gt::gt() |> 
+  gt::text_transform(
+    locations = gt::cells_body(columns = Image),
+    fn = function(x){
+        purrr::map(
+        visitor_table$Image, gt::html
+      )
+    }
+  ) |> 
+  gt::text_transform(
+    locations = gt::cells_body(columns = source_link),
+    fn = function(x){
+        purrr::map(
+        image_credits_table$source_link, gt::html
+      )
+    }
+  ) |> 
+  gt::text_transform(
+    locations = gt::cells_body(columns = cc_license),
+    fn = function(x){
+        purrr::map(
+        image_credits_table$cc_license, gt::html
+      )
+    }
+  ) |> 
+  # column width
+  gt::cols_width(
+    Image ~ gt::px(10),
+    source_link ~ gt::px(100),
+    cc_license ~ gt::px(30)
+  ) |> 
+  # change column labels
+  gt::cols_label(
+    source_link = "Description",
+    cc_license = "CC License"
+  ) |> 
+  gt::cols_align(align = "left")
+  # gt::tab_options(
+  #   table.font.size = gt::px(9)
+  # )
 ```
