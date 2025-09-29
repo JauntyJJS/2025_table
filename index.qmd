@@ -1292,7 +1292,8 @@ lineplot_list = list(
 
 # Table
 
-<a href="https://www.singstat.gov.sg/find-data/search-by-theme/population/births-and-fertility/latest-data" target="_blank"><i class="bi bi-globe" style="color:#000000;"></i></a>
+
+
 
 ```{r}
 #| label: make table
