@@ -25,6 +25,7 @@ library(purrr)
 library(glue)
 library(ggplot2)
 library(gt)
+library(fontawesome)
 
 round_any = function(x, accuracy, f = round){f(x / accuracy) * accuracy}
 ```
@@ -43,13 +44,45 @@ image_credits_data <- readr::read_csv(
   show_col_types = FALSE
 )
 
+places_introduction_data <- tibble::tribble(
+  ~Places, ~Introduction,
+  "Jurong Lake Gardens", "Located at the western region of Singapore, it comprises of three distinct garden areas: the Lakeside Garden, Chinese and Japanese Gardens. In 2019, rejuvenation works began on the Chinese and Japanese Gardens and was reopened in September 2024.",
+  "Singapore Zoological Gardens", "A wildlife park that offers an open-concept enclosures, allowing animals to roam freely while visitors feel part of the ecosystem. It is home to over 4,200 animals where visitors can enjoy feeding experiences, animal shows and learn about wildlife protection efforts.",
+  "Night Safari", "Unlike traditional zoos, the Night Safari opens at night, allowing guests to see nocturnal and crepuscular animals active in their natural environment. The park uses specialised moonlight-mimicking lighting to allow for unique, close-up viewing of animals without disturbing their natural behaviors.",
+  "River Wonder", "This is Asia's first river-themed wildlife park, featuring one of the world's largest collections of river-dwelling animals. It focuses on freshwater conservation, offering immersive experiences such as themed river zones, a boat ride, and displays of threatened species like the Mekong giant catfish.",
+  "Mandai Bird Paradise", "Opened on May 8, 2023, Mandai Bird Paradise is Asia's largest bird park. The 17-hectare park features eight large, themed walk-through aviaries that simulate different global biomes, allowing visitors to get close to more than 3,500 birds from over 400 species in immersive, naturalistic habitats.",
+  "National Museum Of Singapore", "Housed in a Renaissance-style building, this museum is one of the nation's oldest museum, a cultural and architectural landmark that uses engaging exhibits to tell the story of Singapore's history and culture from its early beginnings to its development into a modern city-state.",
+  "Asian Civilisations Museum", "This museum is home to many antiquities and decorative art, focusing on the artistic heritage of Asia and the historical connections between different cultures. It explores the material history of regions like China, Southeast Asia, and South Asia through a comprehensive collection and exhibitions.",
+  "Peranakan Museum", "Home to over 800 artefacts, the museum delves into the vibrant culture of the Peranakan community, a diverse group of people in Southeast Asia with a mixed heritage. The museum reopened its doors on 2023 after nearly four years of renovation work.",
+  "Indian Heritage Centre", "This is Singapore's first museum dedicated to the Indian community, tracing their history and contributions in Singapore and Southeast Asia from the 1st century to the present day. Opened in May 2015, the 4-storey building features galleries with over 400 artefacts as well as a special eye-catching facade.",
+  "Children's Museum Singapore", "A museum dedicated for children to cultivate a love for museums. Housed in a historic double-storey colonial building, it offers interactive, hands-on experiences where children learn, through play and exploration, about Singapore's culture and heritage.",
+  "Science Centre Singapore", "An attraction that fosters interest in science and technology through hands-on exhibits and engaging shows. A new Science Centre is planned as part of the Jurong Lake District, designed to integrate nature with science through outdoor exhibits and landscaped gardens.",
+  "Singapore Art Museum", "Singapore's first dedicated museum, presenting contemporary and visual arts from a Southeast Asian perspective. It closed its main heritage buildings in 2019 for redevelopment and was relocated to Tanjong Pagar DistriPark in January 2022"
+)
+
+places_homepage_data <- tibble::tribble(
+  ~Places, ~Homepage,
+  "Jurong Lake Gardens", '<a href="https://juronglakegardens.nparks.gov.sg/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
+  "Singapore Zoological Gardens", '<a href="https://www.mandai.com/en/singapore-zoo.html/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
+  "Night Safari", '<a href="https://www.mandai.com/en/night-safari.html/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
+  "River Wonder", '<a href="https://www.mandai.com/en/river-wonders.html" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
+  "Mandai Bird Paradise", '<a href="https://www.mandai.com/en/bird-paradise.html" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
+  "National Museum Of Singapore", '<a href="https://www.nhb.gov.sg/nationalmuseum/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
+  "Asian Civilisations Museum", '<a href="https://www.nhb.gov.sg/acm" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
+  "Peranakan Museum", '<a href="https://www.nhb.gov.sg/peranakanmuseum/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
+  "Indian Heritage Centre", '<a href="https://www.indianheritage.gov.sg/en" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
+  "Children's Museum Singapore", '<a href="https://www.heritage.sg/childrensmuseum" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
+  "Science Centre Singapore", '<a href="https://www.science.edu.sg/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
+  "Singapore Art Museum", '<a href="https://www.singaporeartmuseum.sg/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>'  
+)
+
 ```
 
 ```{r}
 #| label: table text
 
 # write caption for table
-data_source <- '<a style="color:#a1b70d" href="https://tablebuilder.singstat.gov.sg/table/TS/M891071" target="_blank">Visits To Selected Places Of Interest Data</a> from <a style="color:#a1b70d" href="https://www.singstat.gov.sg/" target="_blank">Department of Statistics Singapore</a>'
+data_source <- '<a style="color:#000086" href="https://tablebuilder.singstat.gov.sg/table/TS/M891071" target="_blank">Visits To Selected Places Of Interest Data</a> from <a style="color:#000086" href="https://www.singstat.gov.sg/" target="_blank">Department of Statistics Singapore</a>'
 
 ```
 
@@ -65,7 +98,7 @@ all_images <- tibble::tibble(ID = image_credits_data$ID)
 all_images <- all_images |> 
   dplyr::mutate(
     Image = glue::glue(
-      "<img src='https://raw.githubusercontent.com/JauntyJJS/2025_table/main/images/{id}.jpg' style='height:100px;'>"
+      "<img src='https://raw.githubusercontent.com/JauntyJJS/2025_table/main/images/{id}.jpg' style='height:130px;'>"
     )
   )
 
@@ -388,8 +421,9 @@ jurong_lake_plot <- jurong_lake |>
     ),
     axis.text = element_text(size = 40),
     panel.grid.major.x = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
-    plot.margin = ggplot2::margin(40, 40, 5, 5)
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f", size = 1),
+    plot.margin = ggplot2::margin(40, 40, 5, 5),
+    plot.background = ggplot2::element_rect(fill = "transparent", colour = NA)
   )
 
 ```
@@ -415,7 +449,7 @@ zoological_garden_plot <- zoological_garden |>
     label = "Covid-19", 
     angle = 90,
     size = 10,
-    vjust = -0.7,
+    vjust = -0.5,
     hjust = 0.5
   ) +
   ggplot2::geom_line(
@@ -456,8 +490,9 @@ zoological_garden_plot <- zoological_garden |>
     ),
     axis.text = element_text(size = 40),
     panel.grid.major.x = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
-    plot.margin = ggplot2::margin(40, 40, 5, 5)
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f", size = 1),
+    plot.margin = ggplot2::margin(40, 40, 5, 5),
+    plot.background = ggplot2::element_rect(fill = "transparent", colour = NA)
   )
 
 ```
@@ -483,7 +518,7 @@ night_safari_plot <- night_safari |>
     label = "Covid-19", 
     angle = 90,
     size = 10,
-    vjust = -0.7,
+    vjust = -0.5,
     hjust = 0.6
   ) +
   ggplot2::geom_line(
@@ -524,8 +559,9 @@ night_safari_plot <- night_safari |>
     ),
     axis.text = element_text(size = 40),
     panel.grid.major.x = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
-    plot.margin = ggplot2::margin(40, 40, 5, 5)
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f", size = 1),
+    plot.margin = ggplot2::margin(40, 40, 5, 5),
+    plot.background = ggplot2::element_rect(fill = "transparent", colour = NA)
   )
 
 ```
@@ -565,7 +601,7 @@ river_wonder_plot <- river_wonder |>
     label = "Covid-19", 
     angle = 90,
     size = 10,
-    vjust = -0.7,
+    vjust = -0.5,
     hjust = 0.6
   ) +
   ggplot2::geom_line(
@@ -606,8 +642,9 @@ river_wonder_plot <- river_wonder |>
     ),
     axis.text = element_text(size = 40),
     panel.grid.major.x = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
-    plot.margin = ggplot2::margin(40, 40, 5, 5)
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f", size = 1),
+    plot.margin = ggplot2::margin(40, 40, 5, 5),
+    plot.background = ggplot2::element_rect(fill = "transparent", colour = NA)
   )
 
 ```
@@ -673,8 +710,9 @@ mandai_bird_paradise_plot <- mandai_bird_paradise |>
     ),
     axis.text = element_text(size = 40),
     panel.grid.major.x = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
-    plot.margin = ggplot2::margin(40, 40, 5, 5)
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f", size = 1),
+    plot.margin = ggplot2::margin(40, 40, 5, 5),
+    plot.background = ggplot2::element_rect(fill = "transparent", colour = NA)
   )
 
 ```
@@ -700,7 +738,7 @@ national_museum_singapore_plot <- national_museum_singapore |>
     label = "Covid-19", 
     angle = 90,
     size = 10,
-    vjust = -0.7,
+    vjust = -0.5,
     hjust = 0.6
   ) +
   ggplot2::geom_line(
@@ -741,8 +779,9 @@ national_museum_singapore_plot <- national_museum_singapore |>
     ),
     axis.text = element_text(size = 40),
     panel.grid.major.x = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
-    plot.margin = ggplot2::margin(40, 40, 5, 5)
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f", size = 1),
+    plot.margin = ggplot2::margin(40, 40, 5, 5),
+    plot.background = ggplot2::element_rect(fill = "transparent", colour = NA)
   )
 
 ```
@@ -768,7 +807,7 @@ asian_civilisations_museum_plot <- asian_civilisations_museum |>
     label = "Covid-19", 
     angle = 90,
     size = 10,
-    vjust = -0.7,
+    vjust = -0.5,
     hjust = 0.8
   ) +
   ggplot2::geom_line(
@@ -808,8 +847,9 @@ asian_civilisations_museum_plot <- asian_civilisations_museum |>
     ),
     axis.text = element_text(size = 40),
     panel.grid.major.x = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
-    plot.margin = ggplot2::margin(40, 40, 5, 5)
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f", size = 1),
+    plot.margin = ggplot2::margin(40, 40, 5, 5),
+    plot.background = ggplot2::element_rect(fill = "transparent", colour = NA)
   )
 
 ```
@@ -885,8 +925,9 @@ peranakan_museum_plot <- peranakan_museum |>
     ),
     axis.text = element_text(size = 40),
     panel.grid.major.x = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
-    plot.margin = ggplot2::margin(40, 40, 5, 5)
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f", size = 1),
+    plot.margin = ggplot2::margin(40, 40, 5, 5),
+    plot.background = ggplot2::element_rect(fill = "transparent", colour = NA)
   )
 
 ```
@@ -926,7 +967,7 @@ indian_heritage_centre_plot <- indian_heritage_centre |>
     label = "Covid-19", 
     angle = 90,
     size = 10,
-    vjust = -0.7,
+    vjust = -0.5,
     hjust = 0.6
   ) +
   ggplot2::geom_line(
@@ -967,8 +1008,9 @@ indian_heritage_centre_plot <- indian_heritage_centre |>
     ),
     axis.text = element_text(size = 40),
     panel.grid.major.x = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
-    plot.margin = ggplot2::margin(40, 40, 5, 5)
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f", size = 1),
+    plot.margin = ggplot2::margin(40, 40, 5, 5),
+    plot.background = ggplot2::element_rect(fill = "transparent", colour = NA)
   )
 
 ```
@@ -1034,8 +1076,9 @@ children_museum_singapore_plot <- children_museum_singapore |>
     ),
     axis.text = element_text(size = 40),
     panel.grid.major.x = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
-    plot.margin = ggplot2::margin(40, 40, 5, 5)
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f", size = 1),
+    plot.margin = ggplot2::margin(40, 40, 5, 5),
+    plot.background = ggplot2::element_rect(fill = "transparent", colour = NA)
   )
 
 ```
@@ -1061,7 +1104,7 @@ science_centre_singapore_plot <- science_centre_singapore |>
     label = "Covid-19", 
     angle = 90,
     size = 10,
-    vjust = -0.7,
+    vjust = -0.5,
     hjust = 0.2
   ) +
   ggplot2::geom_line(
@@ -1102,8 +1145,9 @@ science_centre_singapore_plot <- science_centre_singapore |>
     ),
     axis.text = element_text(size = 40),
     panel.grid.major.x = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
-    plot.margin = ggplot2::margin(40, 40, 5, 5)
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f", size = 1),
+    plot.margin = ggplot2::margin(40, 40, 5, 5),
+    plot.background = ggplot2::element_rect(fill = "transparent", colour = NA)
   )
 
 ```
@@ -1119,13 +1163,23 @@ singapore_art_museum_plot <- singapore_art_museum |>
     ),
   ) +
   ggplot2::geom_vline(
-    xintercept = as.Date(c("2022-01-01")),
+    xintercept = as.Date(c("2019-01-01", "2022-01-01")),
     linetype = "solid", color = "purple", size = 4, alpha = 0.4
   ) +
   ggplot2::geom_vline(
     xintercept = as.Date(c("2020-01-01")),
     linetype = "solid", color = "red", size = 4, alpha = 0.4
   ) +
+  ggplot2::annotate(
+    "text", 
+    x = as.Date("2019-01-01"), 
+    y = max(singapore_art_museum[["Visitors_In_Thousands"]]), 
+    label = "Renovation", 
+    angle = 90,
+    size = 10,
+    vjust = -0.7,
+    hjust = 0.8
+  ) +    
   ggplot2::annotate(
     "text", 
     x = as.Date("2022-01-01"), 
@@ -1143,7 +1197,7 @@ singapore_art_museum_plot <- singapore_art_museum |>
     label = "Covid-19", 
     angle = 90,
     size = 10,
-    vjust = -0.7,
+    vjust = -0.5,
     hjust = 0.8
   ) +
   ggplot2::geom_line(
@@ -1184,8 +1238,9 @@ singapore_art_museum_plot <- singapore_art_museum |>
     ),
     axis.text = element_text(size = 40),
     panel.grid.major.x = ggplot2::element_blank(),
-    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f"),
-    plot.margin = ggplot2::margin(40, 40, 5, 5)
+    panel.grid.major.y = ggplot2::element_line(colour = "#8a8d8f", size = 1),
+    plot.margin = ggplot2::margin(40, 40, 5, 5),
+    plot.background = ggplot2::element_rect(fill = "transparent", colour = NA)
   )
 
 ```
@@ -1199,11 +1254,23 @@ visitor_table <- image_credits_data |>
     y = all_images,
     by = dplyr::join_by("ID")
   ) |> 
-  dplyr::select(
-    c("Places", "Image")
-  ) |> 
+  dplyr::left_join(
+    y = places_introduction_data,
+    by = dplyr::join_by("Places")
+  ) |>   
+  dplyr::left_join(
+    y = places_homepage_data,
+    by = dplyr::join_by("Places")
+  ) |>  
   dplyr::mutate(
+    Places = glue::glue('<p><b>{.data[["Places"]]}</b> {.data[["Homepage"]]}<br><small>{.data[["Introduction"]]}</small><p>'),
     lines = NA
+  ) |> 
+  dplyr::select(
+    c("Places", "Image", "lines")
+  ) |> 
+  dplyr::relocate(
+    "Image"
   )
 
 lineplot_list = list(
@@ -1225,6 +1292,8 @@ lineplot_list = list(
 
 # Table
 
+<a href="https://www.singstat.gov.sg/find-data/search-by-theme/population/births-and-fertility/latest-data" target="_blank"><i class="bi bi-globe" style="color:#000000;"></i></a>
+
 ```{r}
 #| label: make table
 
@@ -1238,26 +1307,52 @@ visitor_table |>
       )
     }
   ) |> 
+  gt::text_transform(
+    locations = gt::cells_body(columns = Places),
+    fn = function(x){
+        purrr::map(
+        visitor_table$Places, gt::html
+      )
+    }
+  ) |> 
   # linecharts
   gt::text_transform(
     locations = cells_body(columns = lines),
     fn = function(x){
       purrr::map(
-        lineplot_list, gt::ggplot_image, height = px(100), aspect_ratio = 4
+        lineplot_list, gt::ggplot_image, height = px(130), aspect_ratio = 3
       )
     }
   ) |> 
-  # column width
-  # gt::cols_width(
-  #   Places ~ gt::px(10),
-  #   Image ~ gt::px(125),
-  #   lines ~ gt::px(325)
-  # ) |> 
+  # change column labels
+  gt::cols_label(
+    Image = "",
+    Places = "",
+    lines = gt::html(
+      "Yearly visits number (in thousands) from 2010 to 2024."
+    )
+  ) |> 
+  gt::cols_align(align = "left") |> 
+  gt::cols_width(
+    Image ~ gt::pct(20),
+    Places ~ gt::pct(40),
+    lines ~ gt::pct(30)
+  ) |>
+  gt::tab_options(
+    table.width = 1125,
+    container.width = 1125,
+    heading.padding = 20,
+    column_labels.font.size = gt::pct(90)
+  ) |>
   # source note uing captions written previously
   gt::tab_source_note(
     source_note = gt::html(
       glue::glue("{data_source}")
     )
+  ) |> 
+  gt::tab_style(
+    style = cell_fill(color = "#f9f5e9"),
+    locations = cells_body(rows = seq(1, 12, 2))
   )
 
 ```
@@ -1274,12 +1369,11 @@ image_credits_table <- image_credits_data |>
     y = all_images,
     by = dplyr::join_by("ID")
   ) |> 
-  
   dplyr::mutate(
     source_link = glue::glue(
-      '<a style="color:#a1b70d" href="{.data[["Image Link"]]}" target="_blank">{.data[["Description"]]}</a> by <a style="color:#a1b70d" href="{.data[["Author Link"]]}" target="_blank">{.data[["Author"]]}</a> at <a style="color:#a1b70d" href="{.data[["Website Link"]]}" target="_blank">{.data[["Website"]]}</a>'),
+      '<a style="color:#000086" href="{.data[["Image Link"]]}" target="_blank">{.data[["Description"]]}</a> by <a style="color:#000086" href="{.data[["Author Link"]]}" target="_blank">{.data[["Author"]]}</a> at <a style="color:#000086" href="{.data[["Website Link"]]}" target="_blank">{.data[["Website"]]}</a>'),
     cc_license = glue::glue(
-      '<a style="color:#a1b70d" href="{.data[["License Link"]]}" target="_blank">{.data[["License"]]}</a>')
+      '<a style="color:#000086" href="{.data[["License Link"]]}" target="_blank">{.data[["License"]]}</a>')
   ) |> 
   dplyr::select(
     c("Image", "source_link", "cc_license")
@@ -1323,7 +1417,4 @@ image_credits_table |>
     cc_license = "CC License"
   ) |> 
   gt::cols_align(align = "left")
-  # gt::tab_options(
-  #   table.font.size = gt::px(9)
-  # )
 ```
