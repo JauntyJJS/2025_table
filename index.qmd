@@ -32,6 +32,15 @@ round_any = function(x, accuracy, f = round){f(x / accuracy) * accuracy}
 
 
 ```{r}
+#| label: table title and subtitle
+
+title <- "Visit Status of Singapore's Places of Interest"
+
+subtitle <- '<p>Singapore has a mix of green spaces and cultural heritage for both Singaporeans and tourists alike.<br>In the table below, we explore the yearly (2010-2024) trends of the number of visits to some selected places of interest.<br><br><small>Links to the home page of each place of interest can be accessed by clicking on the <a <i class="bi bi-link-45deg" style="color:#000086; font-size: 20px;"></i></a> icon</small><p>'
+
+```
+
+```{r}
 #| label: read data
 
 visitors_full_data <- readr::read_csv(
@@ -49,12 +58,12 @@ places_introduction_data <- tibble::tribble(
   "Jurong Lake Gardens", "Located at the western region of Singapore, it comprises of three distinct garden areas: the Lakeside Garden, Chinese and Japanese Gardens. In 2019, rejuvenation works began on the Chinese and Japanese Gardens and was reopened in September 2024.",
   "Singapore Zoological Gardens", "A wildlife park that offers an open-concept enclosures, allowing animals to roam freely while visitors feel part of the ecosystem. It is home to over 4,200 animals where visitors can enjoy feeding experiences, animal shows and learn about wildlife protection efforts.",
   "Night Safari", "Unlike traditional zoos, the Night Safari opens at night, allowing guests to see nocturnal and crepuscular animals active in their natural environment. The park uses specialised moonlight-mimicking lighting to allow for unique, close-up viewing of animals without disturbing their natural behaviors.",
-  "River Wonder", "This is Asia's first river-themed wildlife park, featuring one of the world's largest collections of river-dwelling animals. It focuses on freshwater conservation, offering immersive experiences such as themed river zones, a boat ride, and displays of threatened species like the Mekong giant catfish.",
+  "River Wonder", "Asia's first river-themed wildlife park, featuring one of the world's largest collections of river-dwelling animals. It focuses on freshwater conservation, offering immersive experiences such as themed river zones, a boat ride, and displays of threatened species like the Mekong giant catfish.",
   "Mandai Bird Paradise", "Opened on May 8, 2023, Mandai Bird Paradise is Asia's largest bird park. The 17-hectare park features eight large, themed walk-through aviaries that simulate different global biomes, allowing visitors to get close to more than 3,500 birds from over 400 species in immersive, naturalistic habitats.",
   "National Museum Of Singapore", "Housed in a Renaissance-style building, this museum is one of the nation's oldest museum, a cultural and architectural landmark that uses engaging exhibits to tell the story of Singapore's history and culture from its early beginnings to its development into a modern city-state.",
-  "Asian Civilisations Museum", "This museum is home to many antiquities and decorative art, focusing on the artistic heritage of Asia and the historical connections between different cultures. It explores the material history of regions like China, Southeast Asia, and South Asia through a comprehensive collection and exhibitions.",
+  "Asian Civilisations Museum", "This museum is home to many antiquities and decorative art, focusing on the heritage of Asia and the historical connections between different cultures. It explores material history of regions like China, Southeast Asia, and South Asia through a comprehensive collection and exhibitions.",
   "Peranakan Museum", "Home to over 800 artefacts, the museum delves into the vibrant culture of the Peranakan community, a diverse group of people in Southeast Asia with a mixed heritage. The museum reopened its doors on 2023 after nearly four years of renovation work.",
-  "Indian Heritage Centre", "This is Singapore's first museum dedicated to the Indian community, tracing their history and contributions in Singapore and Southeast Asia from the 1st century to the present day. Opened in May 2015, the 4-storey building features galleries with over 400 artefacts as well as a special eye-catching facade.",
+  "Indian Heritage Centre", "As Singapore's first museum dedicated to the Indian community, it traces their history and contributions in Singapore and Southeast Asia from the 1st century to the present day. Opened in May 2015, the 4-storey building features galleries with over 400 artefacts as well as a special eye-catching facade.",
   "Children's Museum Singapore", "A museum dedicated for children to cultivate a love for museums. Housed in a historic double-storey colonial building, it offers interactive, hands-on experiences where children learn, through play and exploration, about Singapore's culture and heritage.",
   "Science Centre Singapore", "An attraction that fosters interest in science and technology through hands-on exhibits and engaging shows. A new Science Centre is planned as part of the Jurong Lake District, designed to integrate nature with science through outdoor exhibits and landscaped gardens.",
   "Singapore Art Museum", "Singapore's first dedicated museum, presenting contemporary and visual arts from a Southeast Asian perspective. It closed its main heritage buildings in 2019 for redevelopment and was relocated to Tanjong Pagar DistriPark in January 2022"
@@ -62,18 +71,18 @@ places_introduction_data <- tibble::tribble(
 
 places_homepage_data <- tibble::tribble(
   ~Places, ~Homepage,
-  "Jurong Lake Gardens", '<a href="https://juronglakegardens.nparks.gov.sg/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
-  "Singapore Zoological Gardens", '<a href="https://www.mandai.com/en/singapore-zoo.html/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
-  "Night Safari", '<a href="https://www.mandai.com/en/night-safari.html/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
-  "River Wonder", '<a href="https://www.mandai.com/en/river-wonders.html" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
-  "Mandai Bird Paradise", '<a href="https://www.mandai.com/en/bird-paradise.html" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
-  "National Museum Of Singapore", '<a href="https://www.nhb.gov.sg/nationalmuseum/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
-  "Asian Civilisations Museum", '<a href="https://www.nhb.gov.sg/acm" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
-  "Peranakan Museum", '<a href="https://www.nhb.gov.sg/peranakanmuseum/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
-  "Indian Heritage Centre", '<a href="https://www.indianheritage.gov.sg/en" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
-  "Children's Museum Singapore", '<a href="https://www.heritage.sg/childrensmuseum" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
-  "Science Centre Singapore", '<a href="https://www.science.edu.sg/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>',
-  "Singapore Art Museum", '<a href="https://www.singaporeartmuseum.sg/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086;"></i></a>'  
+  "Jurong Lake Gardens", '<a href="https://juronglakegardens.nparks.gov.sg/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086; font-size: 18px;"></i></a>',
+  "Singapore Zoological Gardens", '<a href="https://www.mandai.com/en/singapore-zoo.html/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086; font-size: 18px;"></i></a>',
+  "Night Safari", '<a href="https://www.mandai.com/en/night-safari.html/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086; font-size: 18px;"></i></a>',
+  "River Wonder", '<a href="https://www.mandai.com/en/river-wonders.html" target="_blank" <i class="bi bi-link-45deg" style="color:#000086; font-size: 18px;"></i></a>',
+  "Mandai Bird Paradise", '<a href="https://www.mandai.com/en/bird-paradise.html" target="_blank" <i class="bi bi-link-45deg" style="color:#000086; font-size: 18px;"></i></a>',
+  "National Museum Of Singapore", '<a href="https://www.nhb.gov.sg/nationalmuseum/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086; font-size: 18px;"></i></a>',
+  "Asian Civilisations Museum", '<a href="https://www.nhb.gov.sg/acm" target="_blank" <i class="bi bi-link-45deg" style="color:#000086; font-size: 18px;"></i></a>',
+  "Peranakan Museum", '<a href="https://www.nhb.gov.sg/peranakanmuseum/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086; font-size: 18px;"></i></a>',
+  "Indian Heritage Centre", '<a href="https://www.indianheritage.gov.sg/en" target="_blank" <i class="bi bi-link-45deg" style="color:#000086; font-size: 18px;"></i></a>',
+  "Children's Museum Singapore", '<a href="https://www.heritage.sg/childrensmuseum" target="_blank" <i class="bi bi-link-45deg" style="color:#000086; font-size: 18px;"></i></a>',
+  "Science Centre Singapore", '<a href="https://www.science.edu.sg/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086; font-size: 18px;"></i></a>',
+  "Singapore Art Museum", '<a href="https://www.singaporeartmuseum.sg/" target="_blank" <i class="bi bi-link-45deg" style="color:#000086; font-size: 18px;"></i></a>'  
 )
 
 ```
@@ -348,7 +357,6 @@ singapore_art_museum <- visitors_data_years |>
   )
 
 ```
-
 
 ```{r}
 #| label: jurong lake visitor plot
@@ -1290,11 +1298,6 @@ lineplot_list = list(
 
 ```
 
-# Table
-
-
-
-
 ```{r}
 #| label: make table
 
@@ -1324,16 +1327,22 @@ visitor_table |>
         lineplot_list, gt::ggplot_image, height = px(130), aspect_ratio = 3
       )
     }
+  ) |>
+  gt::tab_header(
+    title = title,
+    subtitle = gt::html(
+      glue::glue("{subtitle}")
+    )
   ) |> 
   # change column labels
   gt::cols_label(
     Image = "",
     Places = "",
     lines = gt::html(
-      "Yearly visits number (in thousands) from 2010 to 2024."
+      "Yearly visits number (in thousands) from 2010 to 2024.<br>Years with no visitors are coloured in <span style='color: #74cdd3; font-weight: bold;'>blue</span>."
     )
   ) |> 
-  gt::cols_align(align = "left") |> 
+  gt::cols_align(align = "left") |>
   gt::cols_width(
     Image ~ gt::pct(20),
     Places ~ gt::pct(40),
@@ -1343,12 +1352,57 @@ visitor_table |>
     table.width = 1125,
     container.width = 1125,
     heading.padding = 20,
-    column_labels.font.size = gt::pct(90)
+    column_labels.font.size = gt::pct(90),
   ) |>
-  # source note uing captions written previously
+  # source note using captions written previously
   gt::tab_source_note(
     source_note = gt::html(
       glue::glue("{data_source}")
+    )
+  ) |> 
+  # title styling
+  tab_style(
+    locations = gt::cells_title(groups = "title"),
+    style = list(
+      gt::cell_text(font = gt::google_font(name = "Chewy"),
+      size = "xx-large",
+      color = "#0E4732",
+      align = "left")
+    )
+  ) |> 
+  # subtitle styling
+  gt::tab_style(
+    locations = gt::cells_title(groups = "subtitle"),
+    style = list(
+      gt::cell_text(font = gt::google_font(name = "Delius"),
+      weight = "bold",
+      size = "large", 
+      color = "#167250",
+      align = "left")
+    )
+  ) |>
+  # column header styling
+  gt::tab_style(
+    locations = gt::cells_column_labels(),
+    style = list(
+      gt::cell_text(font = gt::google_font(name = "Onest"),
+      align = "left")
+    )
+  ) |>
+  # notes styling
+  gt::tab_style(
+    locations = gt::cells_source_notes(),
+    style = list(
+      gt::cell_text(font = gt::google_font(name = "Onest"),
+      align = "left")
+    )
+  ) |>
+  # Place Column styling
+  gt::tab_style(
+    locations = gt::cells_body(columns = c(Places)),
+    style = list(
+      gt::cell_text(font = gt::google_font(name = "Onest")
+      )
     )
   ) |> 
   gt::tab_style(
@@ -1357,10 +1411,6 @@ visitor_table |>
   )
 
 ```
-
-# Image Credits
-
-All images are cropped to an aspect ratio of 16:9.
 
 ```{r}
 #| label: make image credits table
@@ -1408,14 +1458,47 @@ image_credits_table |>
   ) |> 
   # column width
   gt::cols_width(
-    Image ~ gt::px(10),
-    source_link ~ gt::px(100),
-    cc_license ~ gt::px(30)
-  ) |> 
+    Image ~ gt::pct(20),
+    source_link ~ gt::pct(60),
+    cc_license ~ gt::pct(20)
+  ) |>
   # change column labels
   gt::cols_label(
     source_link = "Description",
     cc_license = "CC License"
   ) |> 
-  gt::cols_align(align = "left")
+  gt::cols_align(align = "left") |> 
+  gt::tab_header(
+    title = "Image Credit",
+    subtitle = "All images are cropped to an aspect ratio of 16:9."
+  ) |> 
+  # title styling
+  tab_style(
+    locations = gt::cells_title(groups = "title"),
+    style = list(
+      gt::cell_text(font = gt::google_font(name = "Chewy"),
+      size = "xx-large",
+      color = "#0E4732",
+      align = "left")
+    )
+  ) |> 
+  # subtitle styling
+  gt::tab_style(
+    locations = gt::cells_title(groups = "subtitle"),
+    style = list(
+      gt::cell_text(font = gt::google_font(name = "Delius"),
+      weight = "bold",
+      size = "large", 
+      color = "#167250",
+      align = "left")
+    )
+  ) |>
+  # column header styling
+  gt::tab_style(
+    locations = gt::cells_column_labels(),
+    style = list(
+      gt::cell_text(font = gt::google_font(name = "Onest"),
+      align = "left")
+    )
+  )
 ```
