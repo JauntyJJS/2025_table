@@ -1,0 +1,8 @@
+---
+title: "Visit Status to Singapore's Places of Interest"
+format: gfm
+---
+
+[Source code](https://github.com/JauntyJJS/2025_table){target="_blank"} for creating the table below for Posit 2025 Table Contest.
+
+![](share_card.jpg){fig-alt="A preview of the table submission." fig-align="center"}
