@@ -1462,6 +1462,12 @@ image_credits_table |>
     source_link ~ gt::pct(60),
     cc_license ~ gt::pct(20)
   ) |>
+  gt::tab_options(
+    table.width = 1125,
+    container.width = 1125,
+    heading.padding = 20,
+    column_labels.font.size = gt::pct(90),
+  ) |>
   # change column labels
   gt::cols_label(
     source_link = "Description",
